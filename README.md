@@ -1,7 +1,7 @@
 Subsonic Database Migration Tool
 =================================
 
-Java tool to migrate a Subsonic database from HSQLDB1.8 to MySQL.
+Java tool to migrate a Subsonic database from HSQLDB1.8 to MySQL. To migrate HSQL 2.0, please use: https://github.com/pddenhar/Subsonic-DB-Migration-Tool
 
 This tool is currently updated to migrate only the users from libresonic 6.x, 6.1, 6.2 to Airsonic, and may not work on other versions.
 
