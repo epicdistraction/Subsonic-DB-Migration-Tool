@@ -1,41 +1,34 @@
 package com.fewstreet;
 
 import java.sql.*;
+import org.hsqldb.jdbc.jdbcDataSource;
 
+import javax.sql.DataSource;
 
 public class Main {
-    private static String OLD_DB_URI = "jdbc:hsqldb:file:C:\\Users\\Peter\\Downloads\\db\\subsonic";
-    private static String NEW_DB_URI = "jdbc:mysql://192.168.1.221/subsonic";
-    private static String NEW_DB_USER = "subsonic";
-    private static String NEW_DB_PASS = "xjXtvllUcRN664pP";
+    private static String OLD_DB_URI = "jdbc:hsqldb:file:/var/libresonic/db/libresonic";
+    private static String NEW_DB_URI = "jdbc:mysql://10.10.100.200/airsonic";
+    private static String NEW_DB_USER = "airsonic";
+    private static String NEW_DB_PASS = "password";
 
     public static void main(String[] args) {
         try {
-            Connection old_db_connection = DriverManager.getConnection(OLD_DB_URI, "SA", "");
+            //Connection old_db_connection = DriverManager.getConnection(OLD_DB_URI, "SA", "");
+
+            jdbcDataSource ds = new jdbcDataSource();
+            ds.setDatabase(OLD_DB_URI);
+            ds.setUser("SA");
+            ds.setPassword("");
+            Connection old_db_connection = ds.getConnection();
             Connection new_db_connection = DriverManager.getConnection(NEW_DB_URI+"?useJDBCCompliantTimezoneShift=true&serverTimezone=UTC&useSSL=false&allowMultiQueries=true", NEW_DB_USER, NEW_DB_PASS);
             new_db_connection.setAutoCommit(false);
 
             truncateDatShit(new_db_connection);
 
-            try { migrateVersion(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Versions Failed: " + e);}
-            try { migrateTableID(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Table IDs Failed: " + e);}
-            try { migrateSystemAvatars(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("System avatars failed: " + e);}
+
             try { migrateRoles(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Roles Failed: " + e);}
             try { migrateUsers(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Users Failed: " + e);}
             try { migrateUserRole(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("User roles Failed: " + e);}
-            try { migrateUserSettings(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("User settings Failed: " + e);}
-            try { migrateCustomAvatars(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("System avatars failed: " + e);}
-            try { migrateMediaFiles(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Media files Failed: " + e);}
-            try { migrateGenres(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Genres Failed: " + e);}
-            try { migrateAlbums(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Albums Failed: " + e);}
-            try { migrateArtists(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Artists roles Failed: " + e);}
-            try { migrateMusicFolders(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Music Folders Failed: " + e);}
-            try { migrateMusicFolderUsers(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Music Folder Users Failed: " + e);}
-            try { migrateStarredMediaFile(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Starred media file Failed: " + e);}
-            try { migrateStarredAlbum(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Starred album Failed: " + e);}
-            try { migrateStarredArtist(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Starred artist Failed: " + e);}
-            try { migrateUserRating(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("User rating Failed: " + e);}
-            try { migrateTranscoding(old_db_connection, new_db_connection); } catch (SQLException e) {System.out.println("Transcodings Failed: " + e);}
 
             new_db_connection.commit();
             new_db_connection.close();
@@ -313,40 +306,11 @@ public class Main {
     
     private static boolean truncateDatShit(Connection newconn) throws SQLException {
         String query = "SET FOREIGN_KEY_CHECKS=0; " +
-                "TRUNCATE TABLE album; " +
-                "TRUNCATE TABLE artist; " +
-                "TRUNCATE TABLE bookmark; " +
-                "TRUNCATE TABLE custom_avatar; " +
-                "TRUNCATE TABLE genre; " +
-                "TRUNCATE TABLE internet_radio; " +
-                "TRUNCATE TABLE media_file; " +
-                "TRUNCATE TABLE music_file_info; " +
-                "TRUNCATE TABLE music_folder; " +
-                "TRUNCATE TABLE music_folder_user; " +
-                "TRUNCATE TABLE play_queue; " +
-                "TRUNCATE TABLE play_queue_file; " +
-                "TRUNCATE TABLE player; " +
-                "TRUNCATE TABLE player_transcoding2; " +
-                "TRUNCATE TABLE playlist; " +
-                "TRUNCATE TABLE playlist_file; " +
-                "TRUNCATE TABLE playlist_user; " +
-                "TRUNCATE TABLE podcast_channel; " +
-                "TRUNCATE TABLE podcast_episode; " +
                 "TRUNCATE TABLE role; " +
-                "TRUNCATE TABLE share; " +
-                "TRUNCATE TABLE share_file; " +
-                "TRUNCATE TABLE starred_album; " +
-                "TRUNCATE TABLE starred_artist; " +
-                "TRUNCATE TABLE starred_media_file; " +
-                "TRUNCATE TABLE system_avatar; " +
-                "TRUNCATE TABLE table_id; " +
-                "TRUNCATE TABLE transcoding2; " +
                 "TRUNCATE TABLE user; " +
                 "TRUNCATE TABLE user_rating; " +
                 "TRUNCATE TABLE user_role; " +
                 "TRUNCATE TABLE user_settings; " +
-                "TRUNCATE TABLE version; " +
-                "TRUNCATE TABLE video_conversion; " +
                 "SET FOREIGN_KEY_CHECKS=1; ";
         boolean result = newconn.createStatement().execute(query);
         System.out.println("Truncated all tables");
